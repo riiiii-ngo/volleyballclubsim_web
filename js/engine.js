@@ -249,7 +249,7 @@ function simulateSet(teamA, teamB, isLastSet) {
 
     // スタミナ消耗
     for (const p of [...teamA.players, ...teamB.players]) {
-      p.stats.currentStamina = Math.max(p.stats.maxStamina * 0.2, p.stats.currentStamina - 0.5);
+      p.stats.currentStamina = Math.max(0, p.stats.currentStamina - 0.5);
     }
 
     // 1ラリー（最大20往復の攻防）

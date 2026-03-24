@@ -87,6 +87,9 @@ const POS_HEIGHT = {
   OP: [182,198], OH: [178,195], MB: [186,202], Se: [173,188], Li: [165,182],
 };
 
+// --- 試合IDカウンター ---
+let _matchIdCounter = 0;
+
 // --- シード乱数 ---
 function seededRand(seed) {
   let s = seed;
@@ -265,7 +268,6 @@ export function generateSchedule(teamIds) {
   }
 
   const allMatches = [];
-  let slotId = 1;
 
   // 3レグ分
   const legWeeks = [LEG1_WEEKS, LEG2_WEEKS, LEG3_WEEKS];
@@ -278,7 +280,7 @@ export function generateSchedule(teamIds) {
         const home = leg === 1 ? m.away : m.home;
         const away = leg === 1 ? m.home : m.away;
         allMatches.push({
-          id: "s" + (slotId++),
+          id: "s" + (++_matchIdCounter),
           leg: leg + 1,
           absoluteWeek: absWeek,
           homeTeamId: home,
@@ -326,6 +328,7 @@ export function generateScoutPool(month, season) {
 export function generateInitialState(teamName) {
   _playerIdCounter = 0;
   _scoutIdCounter = 0;
+  _matchIdCounter = 0;
 
   const seed = Date.now() % 100000;
   const teams = TEAM_DEFS.map(def => generateTeam(def, seed));
