@@ -76,7 +76,7 @@ export function renderHeader() {
     const opId = nextMatch.homeTeamId === player.teamId ? nextMatch.awayTeamId : nextMatch.homeTeamId;
     const op = getTeamById(opId);
     const { month: nm, week: nw } = absToMonthWeek(nextMatch.absoluteWeek);
-    document.getElementById("hdr-nextmatch").textContent = `次戦: vs ${op?.shortName || "?"} (${nm}月W${nw})`;
+    document.getElementById("hdr-nextmatch").textContent = `次戦: vs ${op?.shortName || "?"} (${nm}月第${nw}週)`;
   } else {
     document.getElementById("hdr-nextmatch").textContent = "次戦: なし";
   }
@@ -117,7 +117,7 @@ function renderPracticeTab(c) {
   const canPractice = practiceUsed < practiceLimit;
   const { month, week, season } = state.time;
 
-  c.innerHTML = `<div class="section-title">${month}月 第${week}週 (Season ${season})</div>`;
+  c.innerHTML = `<div class="section-title">S${season} ${month}月 第${week}週</div>`;
 
   // 資金不足の警告
   if (state.flags.insolvent) {
@@ -156,7 +156,7 @@ function renderPracticeTab(c) {
   for (const menu of PRACTICE_MENUS) {
     const btn = document.createElement("button");
     btn.className = "practice-btn" + (menu.id === "rest" ? " rest" : "");
-    btn.disabled = !canPractice && !menu.isRest;
+    btn.disabled = !canPractice;
     btn.innerHTML = `<div class="practice-name">${menu.icon} ${menu.name}</div>
       <div class="practice-effect">${menu.isRest ? "全選手の体力を回復" : menu.stats.join("・") + " +" + menu.xpMin + "~" + menu.xpMax + "XP"}</div>`;
     btn.addEventListener("click", () => doPractice(menu.id));
@@ -390,7 +390,7 @@ function renderRoster(el, team) {
       </div>
       <div class="player-stats-grid">${statsHtml}</div>
       ${staminaBar(p.stats.currentStamina, p.stats.maxStamina)}
-      <div style="font-size:11px;color:var(--text-muted);margin-top:4px">体力: ${p.stats.currentStamina}/${p.stats.maxStamina} (${stamPct}%)</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px">体力: ${p.stats.currentStamina.toFixed(1)}/${p.stats.maxStamina.toFixed(1)} (${stamPct}%)</div>
       <div style="margin-top:8px">
         <button class="btn btn-danger btn-sm" data-fire="${p.id}">解雇</button>
       </div>`;
@@ -449,7 +449,7 @@ async function showStarterPicker(slotKey, team, parentEl) {
   content.innerHTML = `<h3 style="margin-bottom:12px">${slotKey} を選択</h3>`;
 
   // ポジションフィルタ（緩め）
-  const posMap = { OP:["OP"], OH1:["OH","OP"], OH2:["OH","OP"], MB1:["MB"], MB2:["MB"], Se:["Se"], Li:["Li"] };
+  const posMap = { OP:["OP","OH"], OH1:["OH","OP"], OH2:["OH","OP"], MB1:["MB"], MB2:["MB"], Se:["Se"], Li:["Li"] };
   const allowed = posMap[slotKey] || [];
   const candidates = team.roster.filter(p => allowed.includes(p.position));
 
@@ -460,7 +460,9 @@ async function showStarterPicker(slotKey, team, parentEl) {
       const btn = document.createElement("button");
       btn.className = "btn btn-secondary btn-block mb-8";
       btn.style.textAlign = "left";
-      btn.innerHTML = `<strong>${p.name}</strong> ${rankBadge(p.rank)} <span class="text-muted">${p.height}cm</span>`;
+      const stamPct = p.stats.maxStamina > 0 ? Math.round(p.stats.currentStamina / p.stats.maxStamina * 100) : 0;
+      btn.innerHTML = `<strong>${p.name}</strong> ${rankBadge(p.rank)} <span class="text-muted">${p.height}cm</span><br>
+        <span class="text-muted" style="font-size:11px">Sp:${p.stats.spike} Re:${p.stats.receive} Sv:${p.stats.serve} Bl:${p.stats.block} To:${p.stats.toss} | 体力:${stamPct}%</span>`;
       btn.addEventListener("click", () => {
         setStarter(slotKey, p.id);
         closeModal();
@@ -780,7 +782,7 @@ function renderSchedule(el) {
     const div = document.createElement("div");
     div.className = "schedule-match";
     div.innerHTML = `
-      <span class="schedule-week">${month}月W${week}</span>
+      <span class="schedule-week">${month}月第${week}週</span>
       <span class="schedule-teams">${isHome ? "●" : "○"} vs ${op?.name || opId}</span>
       <span class="schedule-result">${resultHtml}</span>`;
     el.appendChild(div);
